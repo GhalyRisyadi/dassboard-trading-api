@@ -38,4 +38,13 @@ def get_signals() -> list[Signal]:
             reason="Contoh: momentum melemah setelah kenaikan tajam",
             created_at=now - 47 * MINUTE_MS,
         ),
+        Signal(
+            id="sample-4",
+            symbol="HYPEUSDT",
+            side="BUY",
+            confidence=81,
+            timeframe="5m",
+            reason="Contoh: buy lah",
+            created_at=now - 10 * MINUTE_MS,
+        ),
     ]

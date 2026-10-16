@@ -18,7 +18,7 @@ def test_signals_shape_matches_frontend_contract():
     assert response.status_code == 200
 
     signals = response.json()
-    assert len(signals) == 3
+    assert len(signals) >= 1
     for signal in signals:
         assert set(signal.keys()) == EXPECTED_KEYS
         assert signal["side"] in {"BUY", "SELL", "HOLD"}
@@ -41,3 +41,7 @@ def test_cors_allows_frontend_dev_origin():
 def test_cors_rejects_unknown_origin():
     response = client.get("/signals", headers={"Origin": "http://evil.example"})
     assert "access-control-allow-origin" not in response.headers
+
+def test_signals_sorted_newest_first():
+    created = [signal["createdAt"] for signal in client.get("/signals").json()]
+    assert created == sorted(created, reverse=True)

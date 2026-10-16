@@ -10,7 +10,7 @@ def get_signals() -> list[Signal]:
     logika sinyal sungguhan, selama bentuk kembaliannya tetap list[Signal]."""
     now = int(time.time() * 1000)
 
-    return [
+    signals = [
         Signal(
             id="sample-1",
             symbol="BTCUSDT",
@@ -45,6 +45,8 @@ def get_signals() -> list[Signal]:
             confidence=81,
             timeframe="5m",
             reason="Contoh: buy lah",
-            created_at=now - 10 * MINUTE_MS,
+            created_at=now - 50 * MINUTE_MS,
         ),
     ]
+
+    return sorted(signals, key=lambda signal: signal.created_at, reverse=True)

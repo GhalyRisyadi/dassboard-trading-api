@@ -17,9 +17,8 @@ class Signal(BaseModel):
     symbol: str
     side: SignalSide
     # Tingkat keyakinan model, 0 sampai 100.
-    confidence: float = Field(ge=0, le=100)
+    confidence: float | None = Field(default=None, ge=0, le=100)
     timeframe: ChartInterval
     reason: str
     # Waktu sinyal dibuat, dalam milidetik sejak epoch (sama seperti Date.now()).
     created_at: int
-    

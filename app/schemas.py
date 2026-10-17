@@ -22,3 +22,4 @@ class Signal(BaseModel):
     reason: str
     # Waktu sinyal dibuat, dalam milidetik sejak epoch (sama seperti Date.now()).
     created_at: int
+    

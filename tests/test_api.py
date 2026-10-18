@@ -101,11 +101,28 @@ def test_failed_symbol_is_skipped_not_fatal(use_binance):
     assert len(symbols) == len(WATCHLIST) - 1
 
 
-def test_all_symbols_failing_returns_502(use_binance):
+def test_all_symbols_failing_returns_502_with_upstream_status_in_logs(use_binance, caplog):
     use_binance(lambda _symbol: httpx.Response(429, json={"msg": "Too many requests"}))
     response = client.get("/signals")
+
     assert response.status_code == 502
     assert "Binance" in response.json()["detail"]
+    assert "category=http_status" in caplog.text
+    assert "status_code=429" in caplog.text
+    assert "Too many requests" not in response.json()["detail"]
+
+
+def test_connection_failure_is_classified_in_logs_not_api_response(use_binance, caplog):
+    def fail_connection(_symbol: str) -> httpx.Response:
+        raise httpx.ConnectError("connection refused")
+
+    use_binance(fail_connection)
+    response = client.get("/signals")
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == "Gagal mengambil data harga dari Binance"
+    assert "category=connection_error" in caplog.text
+    assert "connection refused" not in response.json()["detail"]
 
 
 def test_symbol_with_too_few_candles_is_skipped(use_binance):

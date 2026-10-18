@@ -1,8 +1,11 @@
+import os
 from dataclasses import dataclass
 
 import httpx2 as httpx
 
-BINANCE_URL = "https://api.binance.com"
+# Alamat dasar API Binance. Bisa diganti lewat variabel lingkungan BINANCE_URL, misalnya
+# https://data-api.binance.vision (alamat khusus data pasar publik).
+BINANCE_URL = os.getenv("BINANCE_URL", "https://data-api.binance.vision").rstrip("/")
 
 
 class MarketDataUnavailable(Exception):

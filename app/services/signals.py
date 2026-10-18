@@ -37,6 +37,16 @@ def _reason(evaluation: Evaluation) -> str:
     return f"Belum ada persilangan baru, tren {trend} ({numbers})"
 
 
+def _failure_details(error: Exception) -> tuple[str, int | None]:
+    if isinstance(error, httpx.HTTPStatusError):
+        return "http_status", error.response.status_code
+    if isinstance(error, httpx.TimeoutException):
+        return "timeout", None
+    if isinstance(error, httpx.RequestError):
+        return "connection_error", None
+    return "data_or_processing_error", None
+
+
 async def _signal_for(client: httpx.AsyncClient, symbol: str) -> Signal | None:
     candles = await fetch_closed_candles(client, symbol, TIMEFRAME, CANDLE_LIMIT)
     evaluation = evaluate_ema_cross([c.close for c in candles], FAST_PERIOD, SLOW_PERIOD)
@@ -64,9 +74,18 @@ async def get_signals(client: httpx.AsyncClient) -> list[Signal]:
     signals: list[Signal] = []
     failures = 0
     for symbol, result in zip(WATCHLIST, results):
-        if isinstance(result, BaseException):
+        if isinstance(result, Exception):
             failures += 1
-            logger.warning("Gagal menghitung sinyal %s: %r", symbol, result)
+            category, status_code = _failure_details(result)
+            logger.warning(
+                "Binance market-data request failed symbol=%s category=%s status_code=%s error_type=%s",
+                symbol,
+                category,
+                status_code,
+                type(result).__name__,
+            )
+        elif isinstance(result, BaseException):
+            raise result
         elif result is not None:
             signals.append(result)
 

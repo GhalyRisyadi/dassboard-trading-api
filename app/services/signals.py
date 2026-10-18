@@ -78,11 +78,13 @@ async def get_signals(client: httpx.AsyncClient) -> list[Signal]:
             failures += 1
             category, status_code = _failure_details(result)
             logger.warning(
-                "Binance market-data request failed symbol=%s category=%s status_code=%s error_type=%s",
+                "Binance market-data request failed symbol=%s category=%s status_code=%s "
+                "error_type=%s error=%s",
                 symbol,
                 category,
                 status_code,
                 type(result).__name__,
+                str(result)[:200],
             )
         elif isinstance(result, BaseException):
             raise result

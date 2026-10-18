@@ -159,3 +159,15 @@ def test_hold_reason_describes_trend_correctly(use_binance):
     by_symbol = {s["symbol"]: s for s in client.get("/signals").json()}
     assert "tren datar" in by_symbol["BTCUSDT"]["reason"]
     assert "tren turun" in by_symbol["ETHUSDT"]["reason"]
+
+
+def test_error_message_is_logged_but_never_returned(use_binance, caplog):
+    def fail_tls(_symbol: str) -> httpx.Response:
+        raise httpx.ConnectError("[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed")
+
+    use_binance(fail_tls)
+    response = client.get("/signals")
+
+    assert response.status_code == 502
+    assert "CERTIFICATE_VERIFY_FAILED" in caplog.text
+    assert "CERTIFICATE_VERIFY_FAILED" not in response.text

@@ -1,6 +1,8 @@
+import random
+
 import pytest
 
-from app.services.ema_cross import evaluate_ema_cross
+from app.services.ema_cross import ema_cross_sides, evaluate_ema_cross
 from app.services.indicators import ema
 from tests.conftest import FALLING, FLAT, RISING
 
@@ -54,3 +56,28 @@ def test_none_when_not_enough_candles():
 def test_rejects_fast_period_not_smaller_than_slow():
     with pytest.raises(ValueError):
         evaluate_ema_cross(FLAT, fast_period=26, slow_period=26)
+
+
+def random_walk(seed: int, steps: int = 400) -> list[float]:
+    rng = random.Random(seed)
+    closes = [100.0]
+    for _ in range(steps):
+        closes.append(closes[-1] * (1 + rng.gauss(0, 0.01)))
+    return closes
+
+
+def test_per_candle_sides_equal_live_evaluation_at_every_point():
+    # Menjamin backtest memakai logika yang sama dengan /signals, bukan salinannya.
+    for closes in (RISING, FALLING, FLAT, random_walk(1), random_walk(2), random_walk(3)):
+        sides = ema_cross_sides(closes)
+        assert len(sides) == len(closes)
+        for i in range(len(closes)):
+            live = evaluate_ema_cross(closes[: i + 1])
+            assert sides[i] == (live.side if live else None)
+
+
+def test_per_candle_sides_are_none_until_enough_data():
+    sides = ema_cross_sides(RISING)
+    assert all(s is None for s in sides[:26])
+    assert sides[26] is not None
+    assert ema_cross_sides([100.0] * 10) == [None] * 10

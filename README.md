@@ -37,6 +37,37 @@ Candle yang sedang berjalan sengaja tidak dipakai karena harganya masih berubah.
 Ini strategi berbasis aturan, bukan model AI, dan tidak menghasilkan probabilitas,
 sehingga `confidence` bernilai `null`. Hasilnya bukan saran trading.
 
+## Backtest
+
+Mengukur strategi persilangan EMA pada data historis Binance, dibandingkan dengan sekadar menahan koin:
+
+```bash
+python -m app.backtest --symbols BTCUSDT ETHUSDT --interval 1h --days 365
+python -m app.backtest --symbols BTCUSDT --days 365 --trades   # tampilkan tiap transaksi
+python -m app.backtest --help
+```
+
+Aturan simulasi:
+
+- Hanya posisi beli (spot, tanpa leverage dan tanpa short). BUY = masuk, SELL = keluar.
+- Sinyal dihitung dari harga penutupan candle ke-i, dieksekusi di harga **buka** candle ke-(i + 1).
+- Komisi 0.1% dan slippage 0.05% per sisi (bisa diubah lewat `--fee-pct` dan `--slippage-pct`).
+- Seluruh modal masuk tiap transaksi. Posisi yang masih terbuka di akhir data ditutup paksa.
+- Pembanding "tahan terus" membayar biaya yang sama satu kali masuk dan satu kali keluar.
+
+Logika sinyalnya adalah kode yang sama dengan `/signals` (`ema_cross_sides` dan
+`evaluate_ema_cross` dijaga sama oleh tes), bukan salinan.
+
+Cara membaca hasilnya:
+
+- Di bawah sekitar 30 transaksi, angka belum bisa disimpulkan (laporan memberi peringatan).
+- Bandingkan juga **penurunan terbesar**, bukan hanya return.
+- Hasil masa lalu bukan jaminan masa depan. Periode EMA yang dicari-cari sampai hasilnya bagus
+  pada data yang sama akan menipu diri sendiri (overfitting); 12/26 di sini sengaja tidak dioptimalkan.
+- Tidak dimodelkan: selisih harga beli-jual (spread), likuiditas, dan pajak.
+- Jendela data dihitung mundur dari saat perintah dijalankan, jadi hasilnya bergeser sedikit
+  tiap hari. Catat tanggal yang tercetak di laporan kalau ingin membandingkan.
+
 ## Konfigurasi
 
 | Variabel       | Default                 | Fungsi                                          |

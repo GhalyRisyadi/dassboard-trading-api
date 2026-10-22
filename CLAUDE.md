@@ -2,9 +2,18 @@
 
 ## Project purpose
 
- The goal of this project is to develop a cryptocurrency market dashboard with an AI model deployed as part of the application. The model is expected to analyze Binance market data and forecast coin prices and their movement direction one to three days ahead. Potential inputs include price and volume, transaction counts, large-trade and order-flow indicators that may act as proxies for whale activity, and other features demonstrated through validation to be predictive. A forecast horizon describes the model's intended capability, not a guarantee of accuracy. Large-trade indicators do not by themselves identify whale holders or their off-exchange movements.
+The goal of this project is to develop a cryptocurrency market dashboard with an AI model deployed as part of the application. The model is expected to analyze Binance market data and forecast coin prices and their movement direction one to three days ahead. Potential inputs include price and volume, transaction counts, large-trade and order-flow indicators that may act as proxies for whale activity, and other features demonstrated through validation to be predictive. A forecast horizon describes the model's intended capability, not a guarantee of accuracy. Large-trade indicators do not by themselves identify whale holders or their off-exchange movements.
 
 The AI forecasting model is a project goal and is not implemented yet. The current backend provides rule-based EMA crossover signals and a historical backtest; the dashboard displays Binance market data and candlestick charts. The application is for market monitoring and strategy evaluation: it does not connect to exchange accounts, place trades, or provide financial advice.
+
+### Binance data sources and planned model input
+
+The planned AI data pipeline uses two Binance market-data sources:
+
+1. **Historical klines (OHLCV):** Open, High, Low, Close, and Volume candles provide historical price and volume context for model training and analysis. The current backend and backtest retrieve candle data from Binance's klines REST endpoint.
+2. **Real-time trades:** Individual executed trades provide a live view of market activity. The planned pipeline will transform the trade stream into time-windowed model features such as transaction counts, traded volume, buy/sell flow where available, and unusually large trades as a proxy for possible whale activity.
+
+The model is intended to use historical OHLCV together with features derived from real-time trades. Candidate features should be tested and retained only when historical and out-of-sample validation shows that they add predictive value. The live trade-stream ingestion and AI feature pipeline are planned capabilities; the current application does not yet feed real-time trades into a forecasting model.
 
 The product is split across two repositories:
 

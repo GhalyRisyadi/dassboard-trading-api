@@ -14,6 +14,14 @@ INTERVAL_MS = {
 PAGE_LIMIT = 1000  # batas candle per permintaan di Binance
 DAY_MS = 86_400_000
 
+def time_window(days: int, until_days_ago: int, now_ms: int) -> tuple[int, int]:
+    """Jendela waktu [mulai, akhir] dalam milidetik.
+
+    `until_days_ago` menggeser akhir jendela ke masa lalu, supaya parameter yang sama bisa
+    diuji pada periode lain yang tidak tumpang-tindih.
+    """
+    end_ms = now_ms - until_days_ago * DAY_MS
+    return end_ms - days * DAY_MS, end_ms
 
 async def fetch_history(
     client: httpx.AsyncClient, symbol: str, interval: str, start_ms: int, end_ms: int

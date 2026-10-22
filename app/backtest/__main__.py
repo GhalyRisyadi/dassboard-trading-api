@@ -11,7 +11,7 @@ import time
 import httpx2 as httpx
 
 from app.backtest.engine import HistoricalCandle, run_backtest
-from app.backtest.history import DAY_MS, INTERVAL_MS, fetch_history
+from app.backtest.history import INTERVAL_MS, fetch_history, time_window
 from app.backtest.report import format_result, format_trades
 from app.services.signals import WATCHLIST
 
@@ -21,6 +21,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--symbols", nargs="+", default=WATCHLIST, help="pair yang diuji")
     parser.add_argument("--interval", choices=sorted(INTERVAL_MS), default="1h")
     parser.add_argument("--days", type=int, default=365, help="panjang data historis (hari)")
+    parser.add_argument(
+        "--until-days-ago",
+        type=int,
+        default=0,
+        help="geser akhir jendela ke masa lalu (hari), untuk menguji periode yang lebih lama",
+    )
     parser.add_argument("--fast", type=int, default=12, help="periode EMA cepat")
     parser.add_argument("--slow", type=int, default=26, help="periode EMA lambat")
     parser.add_argument("--fee-pct", type=float, default=0.1, help="komisi per sisi, dalam persen")
@@ -28,12 +34,14 @@ def parse_args() -> argparse.Namespace:
         "--slippage-pct", type=float, default=0.05, help="slippage per sisi, dalam persen"
     )
     parser.add_argument("--trades", action="store_true", help="tampilkan daftar transaksi")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.until_days_ago < 0:
+        parser.error("--until-days-ago tidak boleh negatif")
+    return args
 
 
 async def run(args: argparse.Namespace) -> int:
-    end_ms = int(time.time() * 1000)
-    start_ms = end_ms - args.days * DAY_MS
+    start_ms, end_ms = time_window(args.days, args.until_days_ago, int(time.time() * 1000))
 
     print(
         f"Backtest EMA {args.fast}/{args.slow} | komisi {args.fee_pct}% dan slippage "

@@ -2,7 +2,7 @@ import asyncio
 
 import httpx2 as httpx
 
-from app.backtest.history import fetch_history
+from app.backtest.history import DAY_MS, fetch_history, time_window
 from tests.conftest import HOUR_MS, START_MS
 
 
@@ -68,3 +68,14 @@ def test_http_error_propagates():
 
     with pytest.raises(httpx.HTTPStatusError):
         run(handler, start_ms=START_MS, end_ms=START_MS + HOUR_MS * 10)
+
+def test_time_window_ends_now_by_default():
+    now = 1_800_000_000_000
+    assert time_window(365, 0, now) == (now - 365 * DAY_MS, now)
+
+
+def test_time_window_can_shift_into_the_past():
+    now = 1_800_000_000_000
+    start, end = time_window(365, 365, now)
+    assert (start, end) == (now - 730 * DAY_MS, now - 365 * DAY_MS)
+    assert end - start == 365 * DAY_MS  # panjang jendela tidak berubah

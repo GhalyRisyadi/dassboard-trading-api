@@ -2,7 +2,9 @@
 
 ## Project purpose
 
-This project provides a cryptocurrency market dashboard and a Python API for rule-based trading signals. The dashboard displays Binance market data, candlestick charts, and EMA crossover signals. It is for market monitoring and strategy evaluation: it does not connect to exchange accounts, place trades, or provide financial advice.
+ The goal of this project is to develop a cryptocurrency market dashboard with an AI model deployed as part of the application. The model is expected to analyze Binance market data and forecast coin prices and their movement direction one to three days ahead. Potential inputs include price and volume, transaction counts, large-trade and order-flow indicators that may act as proxies for whale activity, and other features demonstrated through validation to be predictive. A forecast horizon describes the model's intended capability, not a guarantee of accuracy. Large-trade indicators do not by themselves identify whale holders or their off-exchange movements.
+
+The AI forecasting model is a project goal and is not implemented yet. The current backend provides rule-based EMA crossover signals and a historical backtest; the dashboard displays Binance market data and candlestick charts. The application is for market monitoring and strategy evaluation: it does not connect to exchange accounts, place trades, or provide financial advice.
 
 The product is split across two repositories:
 
